@@ -1,0 +1,4 @@
+bin/*
+jormungandr.mk
+rapport.txt
+*.dat
