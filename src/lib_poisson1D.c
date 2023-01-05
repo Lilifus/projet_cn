@@ -22,11 +22,11 @@ void set_GB_operator_colMajor_poisson1D_Id(double* AB, int *lab, int *la, int *k
 }
 
 void set_dense_RHS_DBC_1D(double* RHS, int* la, double* BC0, double* BC1) {
-  RHS[0] = (*BC0);
-  for (int i = 1; i < (*la); i++) {
-    RHS[i] = 0.0;
-  }
-  RHS[(*la)-1] = (*BC1);
+    RHS[0] = (*BC0);
+    for (int i = 1; i < (*la); i++) {
+        RHS[i] = 0.0;
+    }
+    RHS[(*la)-1] = (*BC1);
 }
 
 
@@ -37,11 +37,11 @@ void set_analytical_solution_DBC_1D(double* EX_SOL, double* X, int* la, double* 
 }
 
 void set_grid_points_1D(double* x, int* la) {
-  double h = 1.0 / (*la + 1);
-  x[0] = h;
-  for (int i = 1; i < (*la); i++) {
-    x[i] = x[i-1] + h;
-  }
+    double h = 1.0 / (*la + 1);
+    x[0] = h;
+    for (int i = 1; i < (*la); i++) {
+        x[i] = x[i-1] + h;
+    }
 }
 
 
@@ -136,6 +136,38 @@ void write_xy(double* vec, double* x, int* la, char* filename){
         perror(filename);
     } 
 }  
+
+void eig_poisson1D(double* eigval, int *la){
+}
+
+double eigmax_poisson1D(int *la){
+    return 0;
+}
+
+double eigmin_poisson1D(int *la){
+    return 0;
+}
+
+double richardson_alpha_opt(int *la){
+    double lambda_max, lambda_min;
+    return 2/(lambda_max + lambda_min);
+}
+
+void richardson_alpha(double *AB, double *RHS, double *X, double *alpha_rich, int *lab, int *la,int *ku, int*kl, double *tol, int *maxit, double *resvec, int *nbite){
+
+}
+
+void extract_MB_jacobi_tridiag(double *AB, double *MB, int *lab, int *la,int *ku, int*kl, int *kv){
+
+}
+
+void extract_MB_gauss_seidel_tridiag(double *AB, double *MB, int *lab, int *la,int *ku, int*kl, int *kv){
+
+}
+
+void richardson_MB(double *AB, double *RHS, double *X, double *MB, int *lab, int *la,int *ku, int*kl, double *tol, int *maxit, double *resvec, int *nbite){
+
+}
 
 int indexABCol(int i, int j, int *lab){
     return i*(*lab)+j;

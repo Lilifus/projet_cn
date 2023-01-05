@@ -1,4 +1,5 @@
 bin/*
 jormungandr.mk
+sleipnir.mk
 rapport.txt
 *.dat
