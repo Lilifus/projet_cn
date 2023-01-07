@@ -73,10 +73,14 @@ int main(int argc,char *argv[])
     clock_gettime(CLOCK_MONOTONIC_RAW, &end);
     cpu_time_used = ( (double) end.tv_sec + (double) end.tv_nsec/1000000000) - ((double) start.tv_sec + (double) start.tv_nsec/1000000000);
 
+    // norm_exsol = ||x-x⁰||
     norm_exsol = cblas_dnrm2(la, EX_SOL, 1);
+    cblas_dscal(la,-1.0,RHS,1);
+    cblas_daxpy(la, 1.0, EX_SOL, 1, RHS, 1);
+    //norm_sol = ||x||
     norm_sol = cblas_dnrm2(la, RHS, 1);
-    norm_res = cblas_dnrm2(la, EX_SOL, 1);
-    relres = norm_res / (norm_exsol * norm_sol);
+    //relres = ||x-x⁰||/||x||
+    relres = norm_sol / norm_exsol;
     printf("DGBMV :\n\tTemps: %f\n\tRelres:%e\n",cpu_time_used,relres);
     /* LU Factorization */
     set_grid_points_1D(X, &la);
@@ -103,10 +107,14 @@ int main(int argc,char *argv[])
     clock_gettime(CLOCK_MONOTONIC_RAW, &end);
     cpu_time_used = ( (double) end.tv_sec + (double) end.tv_nsec/1000000000) - ((double) start.tv_sec + (double)start.tv_nsec/1000000000);
 
+    // norm_exsol = ||x-x⁰||
     norm_exsol = cblas_dnrm2(la, EX_SOL, 1);
+    cblas_dscal(la,-1.0,RHS,1);
+    cblas_daxpy(la, 1.0, EX_SOL, 1, RHS, 1);
+    //norm_sol = ||x||
     norm_sol = cblas_dnrm2(la, RHS, 1);
-    norm_res = cblas_dnrm2(la, EX_SOL, 1);
-    relres = norm_res / (norm_exsol * norm_sol);
+    //relres = ||x-x⁰||/||x||
+    relres = norm_sol / norm_exsol;
     printf("DGBTRF&DGBTRS :\n\tTemps: %f\n\tRelres:%e\n",cpu_time_used,relres);
 
     //----------------DGBTRFTRIDIAG---------------------
@@ -131,10 +139,14 @@ int main(int argc,char *argv[])
     clock_gettime(CLOCK_MONOTONIC_RAW, &end);
     cpu_time_used = ( (double) end.tv_sec + (double) end.tv_nsec/1000000000) - ((double) start.tv_sec + (double)start.tv_nsec/1000000000);
 
+    // norm_exsol = ||x-x⁰||
     norm_exsol = cblas_dnrm2(la, EX_SOL, 1);
+    cblas_dscal(la,-1.0,RHS,1);
+    cblas_daxpy(la, 1.0, EX_SOL, 1, RHS, 1);
+    //norm_sol = ||x||
     norm_sol = cblas_dnrm2(la, RHS, 1);
-    norm_res = cblas_dnrm2(la, EX_SOL, 1);
-    relres = norm_res / (norm_exsol * norm_sol);
+    //relres = ||x-x⁰||/||x||
+    relres = norm_sol / norm_exsol;
     printf("Tridiag&DGBTRS :\n\tTemps: %f\n\tRelres:%e\n",cpu_time_used,relres);
     /* It can also be solved with dgbsv */
     // TODO : use dgbsv
@@ -147,10 +159,14 @@ int main(int argc,char *argv[])
     clock_gettime(CLOCK_MONOTONIC_RAW, &end);
     cpu_time_used = ( (double) end.tv_sec + (double) end.tv_nsec/1000000000) - ((double) start.tv_sec + (double)start.tv_nsec/1000000000);
 
+    // norm_exsol = ||x-x⁰||
     norm_exsol = cblas_dnrm2(la, EX_SOL, 1);
+    cblas_dscal(la,-1.0,RHS,1);
+    cblas_daxpy(la, 1.0, EX_SOL, 1, RHS, 1);
+    //norm_sol = ||x||
     norm_sol = cblas_dnrm2(la, RHS, 1);
-    norm_res = cblas_dnrm2(la, EX_SOL, 1);
-    relres = norm_res / (norm_exsol * norm_sol);
+    //relres = ||x-x⁰||/||x||
+    relres = norm_sol / norm_exsol;
     printf("DGBSV :\n\tTemps: %f\n\tRelres:%e\n",cpu_time_used,relres);
     if (info!=0){printf("\n INFO DGBSV = %d\n",info);}
 
@@ -159,10 +175,14 @@ int main(int argc,char *argv[])
     /* Relative forward error */
     // TODO : Compute relative norm of the residual
 
+    // norm_exsol = ||x-x⁰||
     norm_exsol = cblas_dnrm2(la, EX_SOL, 1);
+    cblas_dscal(la,-1.0,RHS,1);
+    cblas_daxpy(la, 1.0, EX_SOL, 1, RHS, 1);
+    //norm_sol = ||x||
     norm_sol = cblas_dnrm2(la, RHS, 1);
-    norm_res = cblas_dnrm2(la, EX_SOL, 1);
-    relres = norm_res / (norm_exsol * norm_sol);
+    //relres = ||x-x⁰||/||x||
+    relres = norm_sol / norm_exsol;
 
     printf("\nThe relative forward error is relres = %e\n",relres);
 

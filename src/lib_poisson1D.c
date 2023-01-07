@@ -5,13 +5,14 @@
 /**********************************************/
 /* #include "lib_poisson1D.h" */
 #include "../include/lib_poisson1D.h"
+#include "../include/atlas_headers.h"
 
 void set_GB_operator_colMajor_poisson1D(double* AB, int *lab, int *la, int *kv){
     for(int i = 0; i < (*la); i++){
         for(int j = 0; j < (*lab); j++){
             if (j < (*kv))AB[i*(*lab)+j]=0;
-            else if(j==(*kv)+1)AB[i*(*lab)+j]=2;
-            else AB[i*(*lab)+j]=-1;
+            else if(j==(*kv)+1)AB[i*(*lab)+j]=2; // D
+            else AB[i*(*lab)+j]=-1; // upper & lower
         }
     }
     AB[(*kv)]=0;
@@ -137,41 +138,96 @@ void write_xy(double* vec, double* x, int* la, char* filename){
     } 
 }  
 
+int indexABCol(int i, int j, int *lab){
+    return j*(*lab)+i;
+}
+int dgbtrftridiag(int *la, int*n, int *kl, int *ku, double *AB, int *lab, int *ipiv, int *info){
+    for(int i = 1; i < *la; i++){
+        if(AB[ *lab*i-2 ]==0){
+            *info=1;
+            break;
+        }
+        AB[*lab*i-1] /= AB[*lab*i-2]; // b(i-1) /= a(i-1)
+        AB[*lab*(i+1)-1] -= AB[*lab*i-1] * AB[*lab*i-3]; // a(i) -= b(i-1)/b(i-1) * c(i-1)
+    }
+    return *info;
+}
+
 void eig_poisson1D(double* eigval, int *la){
 }
 
 double eigmax_poisson1D(int *la){
+    /* double h = 1.0 / ((*la) +1.0); */
+    /* return 4*sqrt(sin(((*la) * M_PI * h)/2)); */
     return 0;
 }
 
 double eigmin_poisson1D(int *la){
+    /* double h = 1.0 / ((*la) +1.0); */
+    /* return 4*sqrt(sin((M_PI * h)/2)); */
     return 0;
 }
 
 double richardson_alpha_opt(int *la){
-    double lambda_max, lambda_min;
-    return 2/(lambda_max + lambda_min);
+    /* return 2/(eigmax_poisson1D(la)+eigmin_poisson1D(la)); */
+    return 0.5; // Demonstration dans le rapport
 }
 
 void richardson_alpha(double *AB, double *RHS, double *X, double *alpha_rich, int *lab, int *la,int *ku, int*kl, double *tol, int *maxit, double *resvec, int *nbite){
+    double *B = malloc(*la* sizeof(double));
+    double norme_B = cblas_dnrm2(*la,RHS,1);
 
+    for((*nbite) = 0; (*nbite) < *maxit ;(*nbite)++){
+        //Copie de RHS dans B
+        cblas_dcopy(*la,  RHS, 1, B,1);
+        //b = b - Ax
+        cblas_dgbmv(CblasColMajor,CblasNoTrans,*la,*la,*kl,*ku,-1.0,AB,*lab,X,1,1.0,B,1);
+        //Calcul du residu
+        resvec[*nbite] = cblas_dnrm2(*la,B,1) / norme_B;
+        //x = x + alpha * b | x = x + alpha*(b-Ax)
+        cblas_daxpy(*la,*alpha_rich,B,1,X,1);
+        if(resvec[*nbite]<=*tol) break;
+    }
+    free(B);
 }
 
 void extract_MB_jacobi_tridiag(double *AB, double *MB, int *lab, int *la,int *ku, int*kl, int *kv){
-
+    //M = D
+    for (int i = 0; i < *la; i++)
+        MB[i*(*lab)+1] = AB[i*(*lab)+1];
 }
 
 void extract_MB_gauss_seidel_tridiag(double *AB, double *MB, int *lab, int *la,int *ku, int*kl, int *kv){
-
+    //M = D - E 
+    for(int i = 0; i < *la; i++){
+        MB[*lab*i+1] = AB[*lab*i+1]; // M = D
+        MB[*lab*i+2] = AB[*lab*i+2]; // M = M - E
+    }
 }
 
 void richardson_MB(double *AB, double *RHS, double *X, double *MB, int *lab, int *la,int *ku, int*kl, double *tol, int *maxit, double *resvec, int *nbite){
+    double *B = malloc(*la * sizeof(double));
+    double norme_B = cblas_dnrm2(*la,RHS,1);
+    int * ipiv = malloc(*la * sizeof(int));
+    int info = 0;
+    int NRHS = 1;
+    int ku_minus = *ku-1; // nécessaire pour MB
 
-}
-
-int indexABCol(int i, int j, int *lab){
-    return i*(*lab)+j;
-}
-int dgbtrftridiag(int *la, int*n, int *kl, int *ku, double *AB, int *lab, int *ipiv, int *info){
-    return 0;
+    // LU factorization of MB
+    dgbtrf_(la, la, kl, &ku_minus, MB, lab, ipiv, &info);
+    for((*nbite) = 0; (*nbite) < *maxit ;(*nbite)++){
+        //Copie de RHS pour garder le même RHS à chaque iteration
+        cblas_dcopy(*la,  RHS, 1, B,1);
+        //b = b - Ax
+        cblas_dgbmv(CblasColMajor,CblasNoTrans,*la,*la,*kl,*ku,-1.0,AB,*lab,X,1,1.0,B,1);
+        //Calcul du residu
+        resvec[*nbite] = cblas_dnrm2(*la,B,1) / norme_B;
+        //b = b/M | b = (b - Ax)/M
+        dgbtrs_("N", la, kl, &ku_minus, &NRHS, MB, lab, ipiv, B, la, &info,1);
+        // x = x + b | x = x + (b - Ax)/M
+        cblas_daxpy(*la,1,B,1,X,1);
+        if(resvec[*nbite]<=*tol) break;
+    }
+    free(B);
+    free(ipiv);
 }
