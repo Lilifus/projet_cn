@@ -22,6 +22,9 @@ int main(int argc,char *argv[])
     double *AB;
     double *MB;
 
+    double norm_exsol;
+    double norm_sol;
+
     double temp, relres;
 
     double opt_alpha;
@@ -67,8 +70,9 @@ int main(int argc,char *argv[])
 
     /* Computation of optimum alpha */
     opt_alpha = richardson_alpha_opt(&la);
-    printf("Optimal alpha for simple Richardson iteration is : %lf",opt_alpha); 
+    printf("Optimal alpha for simple Richardson iteration is : %lf\n",opt_alpha); 
 
+    printf("Function\t\tRelres\t\tnbite\n");
     /* Solve */
     double tol=1e-3;
     int maxit=1000;
@@ -77,29 +81,84 @@ int main(int argc,char *argv[])
 
     resvec=(double *) calloc(maxit, sizeof(double));
 
-    /* Solve with Richardson alpha */
-    /* richardson_alpha(AB, RHS, SOL, &opt_alpha, &lab, &la, &ku, &kl, &tol, &maxit, resvec, &nbite); */
+    /*-----------------Solve with Richardson alpha----------------------*/
+    richardson_alpha(AB, RHS, SOL, &opt_alpha, &lab, &la, &ku, &kl, &tol, &maxit, resvec, &nbite);
+    //------CALCUL D'ERREUR-----------
+    // norm_exsol = ||x-x⁰||
+    norm_exsol = cblas_dnrm2(la, EX_SOL, 1);
+    cblas_dscal(la,-1.0,RHS,1);
+    cblas_daxpy(la, 1.0, EX_SOL, 1, RHS, 1);
+    //norm_sol = ||x||
+    norm_sol = cblas_dnrm2(la, RHS, 1);
+    //relres = ||x-x⁰||/||x||
+    relres = norm_sol / norm_exsol;
+    printf("Richardson_alpha\t%e\t%d\n",relres,nbite);
 
-    /* Richardson General Tridiag */
+    /* Write solution */
+    write_vec(SOL, &la, "SOLalpha.dat");
+
+    /* Write convergence history */
+    write_vec(resvec, &nbite, "RESVECalpha.dat");
+
+
+    /*-----------------Richardson General Tridiag-----------------------*/
 
     /* get MB (:=M, D for Jacobi, (D-E) for Gauss-seidel) */
     kv = 1;
     ku = 1;
     kl = 1;
     MB = (double *) malloc(sizeof(double)*(lab)*la);
-    /* extract_MB_jacobi_tridiag(AB, MB, &lab, &la, &ku, &kl, &kv); */
+
+    /*-----------------          Jacobi          -----------------------*/
+    memset(SOL,0,la*sizeof(double));
+    set_dense_RHS_DBC_1D(RHS,&la,&T0,&T1);
+    extract_MB_jacobi_tridiag(AB, MB, &lab, &la, &ku, &kl, &kv);
+    /* write_GB_operator_colMajor_poisson1D(MB, &lab, &la, "EXTRACT.dat"); */
+
+    /* Solve with General Richardson */
+    richardson_MB(AB, RHS, SOL, MB, &lab, &la, &ku, &kl, &tol, &maxit, resvec, &nbite);
+    //------CALCUL D'ERREUR-----------
+    // norm_exsol = ||x-x⁰||
+    norm_exsol = cblas_dnrm2(la, EX_SOL, 1);
+    cblas_dscal(la,-1.0,RHS,1);
+    cblas_daxpy(la, 1.0, EX_SOL, 1, RHS, 1);
+    //norm_sol = ||x||
+    norm_sol = cblas_dnrm2(la, RHS, 1);
+    //relres = ||x-x⁰||/||x||
+    relres = norm_sol / norm_exsol;
+    printf("JACOBI\t\t\t%e\t%d\n",relres,nbite);
+
+    /* Write solution */
+    write_vec(SOL, &la, "SOLJac.dat");
+
+    /* Write convergence history */
+    write_vec(resvec, &nbite, "RESVECJac.dat");
+
+    /*-----------------       Gauss-Seidel       -----------------------*/
+    memset(SOL,0,la*sizeof(double));
+    set_dense_RHS_DBC_1D(RHS,&la,&T0,&T1);
     extract_MB_gauss_seidel_tridiag(AB, MB, &lab, &la, &ku, &kl, &kv);
     /* write_GB_operator_colMajor_poisson1D(MB, &lab, &la, "EXTRACT.dat"); */
 
     /* Solve with General Richardson */
     richardson_MB(AB, RHS, SOL, MB, &lab, &la, &ku, &kl, &tol, &maxit, resvec, &nbite);
+    //------CALCUL D'ERREUR-----------
+    // norm_exsol = ||x-x⁰||
+    norm_exsol = cblas_dnrm2(la, EX_SOL, 1);
+    cblas_dscal(la,-1.0,RHS,1);
+    cblas_daxpy(la, 1.0, EX_SOL, 1, RHS, 1);
+    //norm_sol = ||x||
+    norm_sol = cblas_dnrm2(la, RHS, 1);
+    //relres = ||x-x⁰||/||x||
+    relres = norm_sol / norm_exsol;
+    printf("GAUSS-SEIDEL\t\t%e\t%d\n",relres,nbite);
 
     /* Write solution */
-    write_vec(SOL, &la, "SOL.dat");
+    write_vec(SOL, &la, "SOLGS.dat");
 
     /* Write convergence history */
-    printf("nbite: %d\n",nbite);
-    write_vec(resvec, &nbite, "RESVEC.dat");
+    write_vec(resvec, &nbite, "RESVECGS.dat");
+
 
     free(resvec);
     free(RHS);

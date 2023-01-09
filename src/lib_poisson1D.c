@@ -147,8 +147,8 @@ int dgbtrftridiag(int *la, int*n, int *kl, int *ku, double *AB, int *lab, int *i
             *info=1;
             break;
         }
-        AB[*lab*i-1] /= AB[*lab*i-2]; // b(i-1) /= a(i-1)
-        AB[*lab*(i+1)-1] -= AB[*lab*i-1] * AB[*lab*i-3]; // a(i) -= b(i-1)/b(i-1) * c(i-1)
+        AB[(*lab*i)-1] /= AB[*lab*i-2]; // b(i-1) /= a(i-1)
+        AB[*lab*(i+1)-2] -= AB[*lab*i-1] * AB[*lab*(i+1)-3]; // a(i) -= b(i-1) * c(i)
     }
     return *info;
 }
@@ -156,21 +156,19 @@ int dgbtrftridiag(int *la, int*n, int *kl, int *ku, double *AB, int *lab, int *i
 void eig_poisson1D(double* eigval, int *la){
 }
 
-double eigmax_poisson1D(int *la){
-    /* double h = 1.0 / ((*la) +1.0); */
-    /* return 4*sqrt(sin(((*la) * M_PI * h)/2)); */
-    return 0;
+double eigmax_poisson1D(int *la){ // lambda_max
+    double h = 1.0 / ((*la) +1.0);
+    return 4*sin(((*la) * M_PI * h)/2)*sin(((*la) * M_PI * h)/2);
 }
 
-double eigmin_poisson1D(int *la){
-    /* double h = 1.0 / ((*la) +1.0); */
-    /* return 4*sqrt(sin((M_PI * h)/2)); */
-    return 0;
+double eigmin_poisson1D(int *la){ // lambda_min
+    double h = 1.0 / ((*la) +1.0);
+    return 4*sin((M_PI * h)/2)*sin(( M_PI * h)/2);
 }
 
 double richardson_alpha_opt(int *la){
-    /* return 2/(eigmax_poisson1D(la)+eigmin_poisson1D(la)); */
-    return 0.5; // Demonstration dans le rapport
+    // return 0.5 | Démonstration dans le rapport
+    return 2/(eigmax_poisson1D(la)+eigmin_poisson1D(la)); 
 }
 
 void richardson_alpha(double *AB, double *RHS, double *X, double *alpha_rich, int *lab, int *la,int *ku, int*kl, double *tol, int *maxit, double *resvec, int *nbite){
