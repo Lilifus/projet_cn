@@ -1,3 +1,5 @@
+*.o
+*.png
 bin/*
 jormungandr.mk
 sleipnir.mk

@@ -63,10 +63,6 @@ int main(int argc,char *argv[])
     AB = (double *) malloc(sizeof(double)*lab*la);
 
     set_GB_operator_colMajor_poisson1D(AB, &lab, &la, &kv);
-
-
-    /* write_vec(RHS, &la, "RHS.dat"); */
-
     write_GB_operator_colMajor_poisson1D(AB, &lab, &la, "AB.dat");
     
 
@@ -81,20 +77,14 @@ int main(int argc,char *argv[])
     for(int i = 0; i < la; i++)
         if (RHS_TMP[i] >1e-10 ) printf("DGBMV Failed to find the good result\n");
 
+    //---------------------TEST with DGBTRF---------------------------
     /* LU Factorization */
     set_dense_RHS_DBC_1D(RHS,&la,&T0,&T1);
     info=0;
     ipiv = (int *) calloc(la, sizeof(int));
+    
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);
     dgbtrf_(&la, &la, &kl, &ku, AB, &lab, ipiv, &info);
-    write_GB_operator_colMajor_poisson1D(AB, &lab, &la, "dgbtrfAB.dat");
-    
-
-    /* LU for tridiagonal matrix  (can replace dgbtrf_) */
-    /* ierr = dgbtrftridiag(&la, &la, &kl, &ku, AB, &lab, ipiv, &info); */
-
-    /* write_GB_operator_colMajor_poisson1D(AB, &lab, &la, "LU.dat"); */
-
     /* Solution (Triangular) */
     if (info==0){
         dgbtrs_("N", &la, &kl, &ku, &NRHS, AB, &lab, ipiv, RHS, &la, &info,1);
@@ -103,9 +93,10 @@ int main(int argc,char *argv[])
         printf("\n INFO = %d\n",info);
     }
     clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-    cpu_time_used = ( (double) end.tv_sec + (double) end.tv_nsec/1000000000) - ((double) start.tv_sec + (double)start.tv_nsec/1000000000);
-    cblas_dcopy(la,RHS,1,RHS_TMP,1);
+    cpu_time_used = ( (double) end.tv_sec + (double) end.tv_nsec/1e9) - ((double) start.tv_sec + (double)start.tv_nsec/1e9);
+    cblas_dcopy(la,RHS,1,RHS_TMP,1);//Copy the result in RHS_TMP
 
+    //Calcul de l'erreur avant
     // norm_exsol = ||x-x⁰||
     norm_exsol = cblas_dnrm2(la, EX_SOL, 1);
     cblas_dscal(la,-1.0,RHS,1);
@@ -120,13 +111,9 @@ int main(int argc,char *argv[])
     set_dense_RHS_DBC_1D(RHS,&la,&T0,&T1);
     set_GB_operator_colMajor_poisson1D(AB, &lab, &la, &kv);
     info=0;
+
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-    /* LU for tridiagonal matrix  (can replace dgbtrf_) */
     ierr = dgbtrftridiag(&la, &la, &kl, &ku, AB, &lab, ipiv, &info);
-    write_GB_operator_colMajor_poisson1D(AB, &lab, &la, "dgbtridiagAB.dat");
-
-    /* write_GB_operator_colMajor_poisson1D(AB, &lab, &la, "LU.dat"); */
-
     /* Solution (Triangular) */
     if (info==0){
         dgbtrs_("N", &la, &kl, &ku, &NRHS, AB, &lab, ipiv, RHS, &la, &info,1);
@@ -135,13 +122,14 @@ int main(int argc,char *argv[])
         printf("\n INFO = %d\n",info);
     }
     clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-    cpu_time_used = ( (double) end.tv_sec + (double) end.tv_nsec/1000000000) - ((double) start.tv_sec + (double)start.tv_nsec/1000000000);
-    //comparing DGBTRIDIAG and DGBTRF
+    cpu_time_used = ( (double) end.tv_sec + (double) end.tv_nsec/1e9) - ((double) start.tv_sec + (double)start.tv_nsec/1e9);
+    //comparing DGBTRIDIAG and DGBTRF results
     cblas_daxpy(la,-1,RHS,1,RHS_TMP,1);
     for(int i = 0; i < la; i++)
         if (RHS_TMP[i] != 0) printf("The solution provided by dgbtrftridiag is different from the one produced by dgbtrf\n");
     
 
+    //Calcul de l'erreur avant
     // norm_exsol = ||x-x⁰||
     norm_exsol = cblas_dnrm2(la, EX_SOL, 1);
     cblas_dscal(la,-1.0,RHS,1);
@@ -151,6 +139,8 @@ int main(int argc,char *argv[])
     //relres = ||x-x⁰||/||x||
     relres = norm_sol / norm_exsol;
     printf("Tridiag&DGBTRS\t%f\t%e\n",cpu_time_used,relres);
+    
+    //-----------------------------------TEST with DGBSV------------------
     /* It can also be solved with dgbsv */
     // TODO : use dgbsv
     set_dense_RHS_DBC_1D(RHS,&la,&T0,&T1);
@@ -158,7 +148,7 @@ int main(int argc,char *argv[])
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);
     dgbsv_(&la, &kl, &ku, &NRHS, AB, &lab, ipiv, RHS, &la, &info);
     clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-    cpu_time_used = ( (double) end.tv_sec + (double) end.tv_nsec/1000000000) - ((double) start.tv_sec + (double)start.tv_nsec/1000000000);
+    cpu_time_used = ( (double) end.tv_sec + (double) end.tv_nsec/1e9) - ((double) start.tv_sec + (double)start.tv_nsec/1e9);
     write_xy(RHS, X, &la, "SOL.dat");
 
     if (info!=0){printf("\n INFO DGBSV = %d\n",info);}
@@ -166,6 +156,8 @@ int main(int argc,char *argv[])
 
     /* Relative forward error */
     // TODO : Compute relative norm of the residual
+
+    //Calcul de l'erreur avant
     // norm_exsol = ||x-x⁰||
     norm_exsol = cblas_dnrm2(la, EX_SOL, 1);
     cblas_dscal(la,-1.0,RHS,1);

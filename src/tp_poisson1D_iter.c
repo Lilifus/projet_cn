@@ -29,6 +29,9 @@ int main(int argc,char *argv[])
 
     double opt_alpha;
 
+    struct timespec start, end;
+    double elapsed;
+
     /* Size of the problem */
     NRHS=1;
     nbpoints=12;
@@ -71,8 +74,7 @@ int main(int argc,char *argv[])
     /* Computation of optimum alpha */
     opt_alpha = richardson_alpha_opt(&la);
     printf("Optimal alpha for simple Richardson iteration is : %lf\n",opt_alpha); 
-
-    printf("Function\t\tRelres\t\tnbite\n");
+    printf("Function\t\tErreur\t\tnbite\tTime\n");
     /* Solve */
     double tol=1e-3;
     int maxit=1000;
@@ -82,7 +84,11 @@ int main(int argc,char *argv[])
     resvec=(double *) calloc(maxit, sizeof(double));
 
     /*-----------------Solve with Richardson alpha----------------------*/
+    clock_gettime(CLOCK_MONOTONIC_RAW,&start);
     richardson_alpha(AB, RHS, SOL, &opt_alpha, &lab, &la, &ku, &kl, &tol, &maxit, resvec, &nbite);
+    clock_gettime(CLOCK_MONOTONIC_RAW,&end);
+    elapsed = ((double) end.tv_sec + (double) end.tv_nsec/1e9) - ((double)start.tv_sec + (double) start.tv_nsec/1e9);
+
     //------CALCUL D'ERREUR-----------
     // norm_exsol = ||x-x⁰||
     norm_exsol = cblas_dnrm2(la, EX_SOL, 1);
@@ -92,14 +98,13 @@ int main(int argc,char *argv[])
     norm_sol = cblas_dnrm2(la, RHS, 1);
     //relres = ||x-x⁰||/||x||
     relres = norm_sol / norm_exsol;
-    printf("Richardson_alpha\t%e\t%d\n",relres,nbite);
+    printf("Richardson_alpha\t%e\t%d\t%e\n",relres,nbite,elapsed);
 
     /* Write solution */
     write_vec(SOL, &la, "SOLalpha.dat");
 
     /* Write convergence history */
     write_vec(resvec, &nbite, "RESVECalpha.dat");
-
 
     /*-----------------Richardson General Tridiag-----------------------*/
 
@@ -116,7 +121,10 @@ int main(int argc,char *argv[])
     /* write_GB_operator_colMajor_poisson1D(MB, &lab, &la, "EXTRACT.dat"); */
 
     /* Solve with General Richardson */
+    clock_gettime(CLOCK_MONOTONIC_RAW,&start);
     richardson_MB(AB, RHS, SOL, MB, &lab, &la, &ku, &kl, &tol, &maxit, resvec, &nbite);
+    clock_gettime(CLOCK_MONOTONIC_RAW,&end);
+    elapsed = ((double) end.tv_sec + (double) end.tv_nsec/1e9) - ((double)start.tv_sec + (double) start.tv_nsec/1e9);
     //------CALCUL D'ERREUR-----------
     // norm_exsol = ||x-x⁰||
     norm_exsol = cblas_dnrm2(la, EX_SOL, 1);
@@ -126,7 +134,7 @@ int main(int argc,char *argv[])
     norm_sol = cblas_dnrm2(la, RHS, 1);
     //relres = ||x-x⁰||/||x||
     relres = norm_sol / norm_exsol;
-    printf("JACOBI\t\t\t%e\t%d\n",relres,nbite);
+    printf("JACOBI\t\t\t%e\t%d\t%e\n",relres,nbite,elapsed);
 
     /* Write solution */
     write_vec(SOL, &la, "SOLJac.dat");
@@ -141,7 +149,10 @@ int main(int argc,char *argv[])
     /* write_GB_operator_colMajor_poisson1D(MB, &lab, &la, "EXTRACT.dat"); */
 
     /* Solve with General Richardson */
+    clock_gettime(CLOCK_MONOTONIC_RAW,&start);
     richardson_MB(AB, RHS, SOL, MB, &lab, &la, &ku, &kl, &tol, &maxit, resvec, &nbite);
+    clock_gettime(CLOCK_MONOTONIC_RAW,&end);
+    elapsed = ((double) end.tv_sec + (double) end.tv_nsec/1e9) - ((double)start.tv_sec + (double) start.tv_nsec/1e9);
     //------CALCUL D'ERREUR-----------
     // norm_exsol = ||x-x⁰||
     norm_exsol = cblas_dnrm2(la, EX_SOL, 1);
@@ -151,7 +162,7 @@ int main(int argc,char *argv[])
     norm_sol = cblas_dnrm2(la, RHS, 1);
     //relres = ||x-x⁰||/||x||
     relres = norm_sol / norm_exsol;
-    printf("GAUSS-SEIDEL\t\t%e\t%d\n",relres,nbite);
+    printf("GAUSS-SEIDEL\t\t%e\t%d\t%e\n",relres,nbite,elapsed);
 
     /* Write solution */
     write_vec(SOL, &la, "SOLGS.dat");

@@ -1,5 +1,5 @@
 #!/bin/bash
-max=25
+max=17
 rm -Rf DGBTRF.dat DGBTRI.dat DGBSV.dat
 for ((i = 4, j = 1 ; j<=$max ; i*=2, j++)); do
     echo "$j / $max , arg = $i"
