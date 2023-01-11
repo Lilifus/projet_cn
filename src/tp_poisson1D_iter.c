@@ -54,9 +54,9 @@ int main(int argc,char *argv[])
     set_dense_RHS_DBC_1D(RHS,&la,&T0,&T1);
     set_analytical_solution_DBC_1D(EX_SOL, X, &la, &T0, &T1);
 
-    write_vec(RHS, &la, "RHS.dat");
-    write_vec(EX_SOL, &la, "EX_SOL.dat");
-    write_vec(X, &la, "X_grid.dat");
+    write_vec(RHS, &la, "data/RHS.dat");
+    write_vec(EX_SOL, &la, "data/EX_SOL.dat");
+    write_vec(X, &la, "data/X_grid.dat");
 
     kv=0;
     ku=1;
@@ -102,10 +102,10 @@ int main(int argc,char *argv[])
     printf("Richardson_alpha\t%e\t%d\t%e\n",relres,nbite,elapsed);
 
     /* Write solution */
-    write_vec(SOL, &la, "SOLalpha.dat");
+    write_vec(SOL, &la, "data/SOLalpha.dat");
 
     /* Write convergence history */
-    write_vec(resvec, &nbite, "RESVECalpha.dat");
+    write_vec(resvec, &nbite, "data/RESVECalpha.dat");
 
     /*-----------------Richardson General Tridiag-----------------------*/
 
@@ -138,10 +138,10 @@ int main(int argc,char *argv[])
     printf("JACOBI\t\t\t%e\t%d\t%e\n",relres,nbite,elapsed);
 
     /* Write solution */
-    write_vec(SOL, &la, "SOLJac.dat");
+    write_vec(SOL, &la, "data/SOLJac.dat");
 
     /* Write convergence history */
-    write_vec(resvec, &nbite, "RESVECJac.dat");
+    write_vec(resvec, &nbite, "data/RESVECJac.dat");
 
     /*-----------------       Gauss-Seidel       -----------------------*/
     memset(SOL,0,la*sizeof(double));
@@ -166,10 +166,10 @@ int main(int argc,char *argv[])
     printf("GAUSS-SEIDEL\t\t%e\t%d\t%e\n",relres,nbite,elapsed);
 
     /* Write solution */
-    write_vec(SOL, &la, "SOLGS.dat");
+    write_vec(SOL, &la, "data/SOLGS.dat");
 
     /* Write convergence history */
-    write_vec(resvec, &nbite, "RESVECGS.dat");
+    write_vec(resvec, &nbite, "data/RESVECGS.dat");
 
 
     free(resvec);
