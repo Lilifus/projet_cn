@@ -111,6 +111,7 @@ int main(int argc,char *argv[])
     set_dense_RHS_DBC_1D(RHS,&la,&T0,&T1);
     set_GB_operator_colMajor_poisson1D(AB, &lab, &la, &kv);
     info=0;
+    /* memset(ipiv,0,sizeof(int)); */
 
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);
     ierr = dgbtrftridiag(&la, &la, &kl, &ku, AB, &lab, ipiv, &info);
@@ -171,8 +172,10 @@ int main(int argc,char *argv[])
     /* printf("\nThe relative forward error is relres = %e\n",relres); */
 
     free(RHS);
+    free(RHS_TMP);
     free(EX_SOL);
     free(X);
     free(AB);
+    free(ipiv);
     printf("\n\n--------- End -----------\n");
 }
