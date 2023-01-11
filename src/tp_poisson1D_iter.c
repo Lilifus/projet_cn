@@ -34,7 +34,8 @@ int main(int argc,char *argv[])
 
     /* Size of the problem */
     NRHS=1;
-    nbpoints=12;
+    if(argc==2)nbpoints=atoi(argv[1]);
+    else nbpoints=12;
     la=nbpoints-2;
 
     /* Dirichlet Boundary conditions */
