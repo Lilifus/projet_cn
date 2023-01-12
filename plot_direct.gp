@@ -1,4 +1,4 @@
-set term png
+set term png size 800,600
 set output sprintf("img/%s.png",ARG1)
 set title "LAPACK functions"
 set ylabel "Time in seconds"

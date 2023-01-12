@@ -10,7 +10,7 @@ for ((i = 4, j = 1 ; j<=$max ; i*=2, j++)); do
 done
 
 mkdir -p img
-gnuplot -c plot.gp RICHARDSON
-gnuplot -c plot.gp JACOBI
-gnuplot -c plot.gp GAUSS
+gnuplot -c plot_iter.gp RICHARDSON
+gnuplot -c plot_iter.gp JACOBI
+gnuplot -c plot_iter.gp GAUSS
 gnuplot plotall_iter.gp

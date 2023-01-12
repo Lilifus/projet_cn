@@ -1,5 +1,5 @@
 
-set term png
+set term png size 800,600
 set output "img/ALL_direct.png"
 set title "LAPACK functions"
 set ylabel "Time in seconds"

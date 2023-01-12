@@ -10,7 +10,7 @@ for ((i = 4, j = 1 ; j<=$max ; i*=2, j++)); do
 done
 
 mkdir -p img
-gnuplot -c plot.gp DGBTRF
-gnuplot -c plot.gp DGBTRI
-gnuplot -c plot.gp DGBSV
+gnuplot -c plot_direct.gp DGBTRF
+gnuplot -c plot_direct.gp DGBTRI
+gnuplot -c plot_direct.gp DGBSV
 gnuplot plotall_direct.gp
