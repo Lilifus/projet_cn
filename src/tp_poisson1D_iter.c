@@ -118,6 +118,7 @@ int main(int argc,char *argv[])
     /*-----------------          Jacobi          -----------------------*/
     memset(SOL,0,la*sizeof(double));
     set_dense_RHS_DBC_1D(RHS,&la,&T0,&T1);
+    nbite=0;
     extract_MB_jacobi_tridiag(AB, MB, &lab, &la, &ku, &kl, &kv);
     /* write_GB_operator_colMajor_poisson1D(MB, &lab, &la, "EXTRACT.dat"); */
 
@@ -146,6 +147,7 @@ int main(int argc,char *argv[])
     /*-----------------       Gauss-Seidel       -----------------------*/
     memset(SOL,0,la*sizeof(double));
     set_dense_RHS_DBC_1D(RHS,&la,&T0,&T1);
+    nbite=0;
     extract_MB_gauss_seidel_tridiag(AB, MB, &lab, &la, &ku, &kl, &kv);
     /* write_GB_operator_colMajor_poisson1D(MB, &lab, &la, "EXTRACT.dat"); */
 

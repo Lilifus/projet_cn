@@ -231,3 +231,22 @@ void richardson_MB(double *AB, double *RHS, double *X, double *MB, int *lab, int
     free(B);
     free(ipiv);
 }
+
+//Exercise 10 CSR and CSC (nothing implemented more than that)
+void set_CR_operator_poisson1D(double* AA, double* JA, double* IA,  int *nnz, int *la){
+    int j=0;
+    IA[0]=0;
+    for(int i = 0; i < *nnz; i++){
+        if(i%3==0)AA[i]=2;
+        else AA[i]=-1;
+        if(i%3==2)JA[i]=j-1;
+        else if(i%3==0){
+            JA[i]=j;
+            j++;
+        }
+        else JA[i]=j;
+    }
+    IA[*la-1]=*nnz-1;
+    IA[*la]=*nnz;
+}
+
